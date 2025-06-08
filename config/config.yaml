@@ -1,0 +1,7 @@
+database:
+  dbtype: "firestore"
+  projectid: "kairon-dev"
+  dbname: ""
+
+server:
+  address: 3000
