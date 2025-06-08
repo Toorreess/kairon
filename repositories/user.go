@@ -46,7 +46,7 @@ func (cs *UserRepositoryImp) Read(id string) (model.User, error) {
 	}
 
 	err = utils.Map2Struct(resMap, &user)
-	return user, nil
+	return user, err
 }
 
 func (cs *UserRepositoryImp) Create(cm model.User) (model.User, error) {
@@ -57,7 +57,7 @@ func (cs *UserRepositoryImp) Create(cm model.User) (model.User, error) {
 	}
 
 	err = utils.Map2Struct(resMap, &user)
-	return user, nil
+	return user, err
 }
 
 func (cs *UserRepositoryImp) Update(id string, changes map[string]any) (model.User, error) {
@@ -68,16 +68,11 @@ func (cs *UserRepositoryImp) Update(id string, changes map[string]any) (model.Us
 	}
 
 	err = utils.Map2Struct(resMap, &user)
-	return user, nil
+	return user, err
 }
 
 func (cs *UserRepositoryImp) Delete(id string) error {
-	err := cs.DB.Delete(userIndex, id, model.User{})
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return cs.DB.Delete(userIndex, id, model.User{})
 }
 
 func (cs *UserRepositoryImp) List(queryOpts infrastructure.QueryOpts) ([]model.User, error) {

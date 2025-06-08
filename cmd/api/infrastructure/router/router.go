@@ -1,11 +1,11 @@
 package router
 
 import (
+	"fmt"
 	db "kairon/adapters/database"
 	"kairon/cmd/api/controllers"
 	"kairon/repositories"
 	"kairon/usecases"
-	"fmt"
 	"log"
 	"net/http"
 	"sort"
@@ -37,6 +37,7 @@ func (s *Server) Run(port int) {
 	userUsecase := usecases.NewUserUsecase(userRepository, s.authClient)
 	userHandlers := controllers.NewUserHandler(userUsecase)
 
+	/* Users */
 	userRoutes := v1.Group("/users")
 	userRoutes.Use(CheckRole([]string{"admin"}))
 	{
@@ -45,6 +46,62 @@ func (s *Server) Run(port int) {
 		userRoutes.PUT("/:id", validatedChanges(userHandlers.HandlePut))
 		userRoutes.DELETE("/:id", userHandlers.HandleDelete)
 		userRoutes.GET("", userHandlers.HandleList)
+	}
+
+	/* Products */
+	productRepository := repositories.NewProductRepository(s.DBConn)
+	productUsecase := usecases.NewProductUsecase(productRepository)
+	productHandlers := controllers.NewProductHandler(productUsecase)
+
+	productRoutes := v1.Group("/products")
+	{
+		productRoutes.GET("/:id", productHandlers.HandleGet)
+		productRoutes.POST("", validated(productHandlers.HandlePost))
+		productRoutes.PUT("/:id", validatedChanges(productHandlers.HandlePut))
+		productRoutes.DELETE("/:id", productHandlers.HandleDelete)
+		productRoutes.GET("", productHandlers.HandleList)
+	}
+
+	/* Activities */
+	activityRepository := repositories.NewActivityRepository(s.DBConn)
+	activityUsecase := usecases.NewActivityUsecase(activityRepository)
+	activityHandlers := controllers.NewActivityHandler(activityUsecase)
+
+	activityRoutes := v1.Group("/activities")
+	{
+		activityRoutes.GET("/:id", activityHandlers.HandleGet)
+		activityRoutes.POST("", validated(activityHandlers.HandlePost))
+		activityRoutes.PUT("/:id", validatedChanges(activityHandlers.HandlePut))
+		activityRoutes.DELETE("/:id", activityHandlers.HandleDelete)
+		activityRoutes.GET("", activityHandlers.HandleList)
+	}
+
+	/* Members */
+	memberRepository := repositories.NewMemberRepository(s.DBConn)
+	memberUsecase := usecases.NewMemberUsecase(memberRepository)
+	memberHandlers := controllers.NewMemberHandler(memberUsecase)
+
+	memberRoutes := v1.Group("/members")
+	{
+		memberRoutes.GET("/:id", memberHandlers.HandleGet)
+		memberRoutes.POST("", validated(memberHandlers.HandlePost))
+		memberRoutes.PUT("/:id", validatedChanges(memberHandlers.HandlePut))
+		memberRoutes.DELETE("/:id", memberHandlers.HandleDelete)
+		memberRoutes.GET("", memberHandlers.HandleList)
+	}
+
+	/* Order */
+	orderRepository := repositories.NewOrderRepository(s.DBConn)
+	orderUsecase := usecases.NewOrderUsecase(orderRepository)
+	orderHandlers := controllers.NewOrderHandler(orderUsecase)
+
+	orderRoutes := v1.Group("/orders")
+	{
+		orderRoutes.GET("/:id", orderHandlers.HandleGet)
+		orderRoutes.POST("", validated(orderHandlers.HandlePost))
+		orderRoutes.PUT("/:id", validatedChanges(orderHandlers.HandlePut))
+		orderRoutes.DELETE("/:id", orderHandlers.HandleDelete)
+		orderRoutes.GET("", orderHandlers.HandleList)
 	}
 
 	printRoutes(s.api.Routes())
