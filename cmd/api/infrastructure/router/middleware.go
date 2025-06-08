@@ -2,10 +2,10 @@ package router
 
 import (
 	"encoding/json"
+	"fmt"
 	"kairon/cmd/api/presenter"
 	"kairon/config"
 	"kairon/utils"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -151,7 +151,6 @@ func validatedChanges[T any](h func(c echo.Context, t T) error) echo.HandlerFunc
 					)
 				}
 			}
-
 		}
 
 		log.Println("updates: ", changes)
@@ -177,8 +176,7 @@ func validatedChanges[T any](h func(c echo.Context, t T) error) echo.HandlerFunc
 }
 
 func validated[T any](h func(c echo.Context, t T) error) echo.HandlerFunc {
-	var validate *validator.Validate
-	validate = validator.New(validator.WithRequiredStructEnabled())
+	validate := validator.New(validator.WithRequiredStructEnabled())
 
 	return func(c echo.Context) error {
 		var t T
