@@ -14,18 +14,21 @@ import (
 type OrderUsecase interface {
 	Read(id string) (model.Order, error)
 	Create(cm model.Order) (model.Order, error)
-	Update(id string, changes map[string]any) (model.Order, error)
 	Delete(id string) error
 	List(queryOpts infrastructure.QueryOpts) ([]model.Order, error)
+	Pay(id string) (model.Order, error)
+	Cancel(id string) (model.Order, error)
 }
 
 type OrderUsecaseImp struct {
-	orderRepository repositories.OrderRepository
+	orderRepository   repositories.OrderRepository
+	productRepository repositories.ProductRepository
 }
 
-func NewOrderUsecase(dr repositories.OrderRepository) OrderUsecase {
+func NewOrderUsecase(dr repositories.OrderRepository, pr repositories.ProductRepository) OrderUsecase {
 	return &OrderUsecaseImp{
-		orderRepository: dr,
+		orderRepository:   dr,
+		productRepository: pr,
 	}
 }
 
@@ -38,10 +41,11 @@ func (cu *OrderUsecaseImp) Create(cm model.Order) (model.Order, error) {
 
 	txErr := cu.orderRepository.RunTransaction(context.Background(), func(tx db.DBTransaction) error {
 		cm.CreatedAt = time.Now().Unix()
+		cm.Status = "pending"
 
 		for _, product := range cm.SelectedProducts {
 			// Get current product data
-			productData, err := tx.Get("Product", product.ID, model.Product{})
+			productData, err := tx.Get(cu.productRepository.Index(), product.ID, model.Product{})
 			if err != nil {
 				return fmt.Errorf("error getting product %s: %v", product.ID, err)
 			}
@@ -63,14 +67,14 @@ func (cu *OrderUsecaseImp) Create(cm model.Order) (model.Order, error) {
 					"stock": currentProduct.Stock - product.Quantity,
 				}
 
-				if err := tx.Update("Product", product.ID, model.Product{}, updates); err != nil {
+				if err := tx.Update(cu.productRepository.Index(), product.ID, model.Product{}, updates); err != nil {
 					return fmt.Errorf("error updating product stock: %v", err)
 				}
 			}
 		}
 
 		// Create the order
-		orderMap, err := tx.Create("Order", cm)
+		orderMap, err := tx.Create(cu.orderRepository.Index(), cm)
 		if err != nil {
 			return fmt.Errorf("error creating order: %v", err)
 		}
@@ -85,15 +89,42 @@ func (cu *OrderUsecaseImp) Create(cm model.Order) (model.Order, error) {
 	return order, nil
 }
 
-// Needed?
-func (cu *OrderUsecaseImp) Update(id string, changes map[string]any) (model.Order, error) {
-	return cu.orderRepository.Update(id, changes)
-}
-
 func (cu *OrderUsecaseImp) Delete(id string) error {
 	return cu.orderRepository.Delete(id)
 }
 
 func (cu *OrderUsecaseImp) List(queryOpts infrastructure.QueryOpts) ([]model.Order, error) {
 	return cu.orderRepository.List(queryOpts)
+}
+
+func (cu *OrderUsecaseImp) Pay(id string) (model.Order, error) {
+	order, err := cu.orderRepository.Read(id)
+	if err != nil {
+		return model.Order{}, err
+	}
+
+	if order.Status != "pending" {
+		return model.Order{}, fmt.Errorf("not valid status: %s", id)
+	}
+
+	changes := map[string]any{
+		"status": "paid",
+	}
+	return cu.orderRepository.Update(id, changes)
+}
+
+func (cu *OrderUsecaseImp) Cancel(id string) (model.Order, error) {
+	order, err := cu.orderRepository.Read(id)
+	if err != nil {
+		return model.Order{}, err
+	}
+
+	if order.Status != "pending" {
+		return model.Order{}, fmt.Errorf("not valid status: %s", id)
+	}
+
+	changes := map[string]any{
+		"status": "cancelled",
+	}
+	return cu.orderRepository.Update(id, changes)
 }

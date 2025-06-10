@@ -15,9 +15,10 @@ import (
 type OrderHandler interface {
 	HandleGet(c echo.Context) error
 	HandlePost(c echo.Context, order model.Order) error
-	HandlePut(c echo.Context, order model.Order) error
 	HandleDelete(c echo.Context) error
 	HandleList(c echo.Context) error
+	HandlePay(c echo.Context) error
+	HandleCancel(c echo.Context) error
 }
 
 type OrderHandlerImp struct {
@@ -43,17 +44,6 @@ func (h *OrderHandlerImp) HandlePost(c echo.Context, order model.Order) error {
 	cm, err := h.orderUsecase.Create(order)
 	if err != nil {
 		log.Printf("Error creating order: %v", err)
-		return echo.NewHTTPError(http.StatusUnprocessableEntity, presenter.APIResponse(http.StatusUnprocessableEntity, err.Error()))
-	}
-
-	return c.JSON(http.StatusOK, cm)
-}
-
-func (h *OrderHandlerImp) HandlePut(c echo.Context, order model.Order) error {
-	changes, _ := c.Get("requestMap").(map[string]any)
-
-	cm, err := h.orderUsecase.Update(c.Param("id"), changes)
-	if err != nil {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, presenter.APIResponse(http.StatusUnprocessableEntity, err.Error()))
 	}
 
@@ -95,4 +85,22 @@ func (h *OrderHandlerImp) HandleList(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, presenter.ListAPIResponse(results, qo.Offset, qo.Limit))
+}
+
+func (h *OrderHandlerImp) HandlePay(c echo.Context) error {
+	cm, err := h.orderUsecase.Pay(c.Param("id"))
+	if err != nil {
+		log.Printf("Error paying order: %v", err)
+		return echo.NewHTTPError(http.StatusBadRequest, presenter.APIResponse(http.StatusBadRequest, err.Error()))
+	}
+	return c.JSON(http.StatusOK, cm)
+}
+
+func (h *OrderHandlerImp) HandleCancel(c echo.Context) error {
+	cm, err := h.orderUsecase.Cancel(c.Param("id"))
+	if err != nil {
+		log.Printf("Error cancelling order: %v", err)
+		return echo.NewHTTPError(http.StatusBadRequest, presenter.APIResponse(http.StatusBadRequest, err.Error()))
+	}
+	return c.JSON(http.StatusOK, cm)
 }
