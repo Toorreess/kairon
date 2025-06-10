@@ -3,9 +3,7 @@ package config
 import (
 	"log"
 	"os"
-	"path/filepath"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/spf13/viper"
 )
 
@@ -29,8 +27,8 @@ func ReadConf() {
 
 	viper.SetConfigName("config")
 	viper.SetConfigType("yml")
-	viper.AddConfigPath(filepath.Join("$GOPATH", "src", "clicker-pro", "config"))
-	// viper.AddConfigPath("config")
+	// viper.AddConfigPath(filepath.Join("$GOPATH", "src", "clicker-pro", "config"))
+	viper.AddConfigPath("config")
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
@@ -46,6 +44,4 @@ func ReadConf() {
 	} else {
 		os.Setenv("PROJECT_ID", C.ProjectID)
 	}
-
-	spew.Dump(C)
 }

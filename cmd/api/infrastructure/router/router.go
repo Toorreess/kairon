@@ -29,6 +29,9 @@ func NewServer(db *db.Connection, authClient *auth.Client) Server {
 }
 
 func (s *Server) Run(port int) {
+	s.api.HideBanner = true
+	s.api.HidePort = true
+
 	s.api.Use(RequestLogger())
 	s.api.Use(AuthLogger(s.authClient))
 	v1 := s.api.Group("/api/v1")
@@ -92,16 +95,17 @@ func (s *Server) Run(port int) {
 
 	/* Order */
 	orderRepository := repositories.NewOrderRepository(s.DBConn)
-	orderUsecase := usecases.NewOrderUsecase(orderRepository)
+	orderUsecase := usecases.NewOrderUsecase(orderRepository, productRepository)
 	orderHandlers := controllers.NewOrderHandler(orderUsecase)
 
 	orderRoutes := v1.Group("/orders")
 	{
 		orderRoutes.GET("/:id", orderHandlers.HandleGet)
 		orderRoutes.POST("", validated(orderHandlers.HandlePost))
-		orderRoutes.PUT("/:id", validatedChanges(orderHandlers.HandlePut))
 		orderRoutes.DELETE("/:id", orderHandlers.HandleDelete)
 		orderRoutes.GET("", orderHandlers.HandleList)
+		orderRoutes.PUT("/:id/pay", orderHandlers.HandlePay)
+		orderRoutes.PUT("/:id/cancel", orderHandlers.HandleCancel)
 	}
 
 	printRoutes(s.api.Routes())
