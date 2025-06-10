@@ -1,6 +1,7 @@
+projectid: "kairon-dev"
+
 database:
   dbtype: "firestore"
-  projectid: "kairon-dev"
   dbname: ""
 
 server:
