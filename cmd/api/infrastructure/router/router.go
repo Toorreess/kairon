@@ -34,12 +34,11 @@ func (s *Server) Run(port int) {
 	s.api.HidePort = true
 	s.api.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions},
-		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowMethods:     []string{"*"},
+		AllowHeaders:     []string{"*"},
 		AllowCredentials: true,
 		MaxAge:           300,
 	}))
-
 
 	s.api.Use(RequestLogger())
 	s.api.Use(AuthLogger(s.authClient))
