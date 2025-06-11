@@ -12,6 +12,7 @@ import (
 
 	"firebase.google.com/go/auth"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 type Server struct {
@@ -31,6 +32,14 @@ func NewServer(db *db.Connection, authClient *auth.Client) Server {
 func (s *Server) Run(port int) {
 	s.api.HideBanner = true
 	s.api.HidePort = true
+	s.api.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions},
+		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowCredentials: true,
+		MaxAge:           300,
+	}))
+
 
 	s.api.Use(RequestLogger())
 	s.api.Use(AuthLogger(s.authClient))

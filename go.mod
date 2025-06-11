@@ -5,7 +5,6 @@ go 1.24.2
 require (
 	cloud.google.com/go/firestore v1.18.0
 	firebase.google.com/go v3.13.0+incompatible
-	github.com/davecgh/go-spew v1.1.1
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/labstack/echo/v4 v4.13.4
 	github.com/spf13/viper v1.20.1
