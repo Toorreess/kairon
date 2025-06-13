@@ -14,7 +14,7 @@ import (
 
 type OrderHandler interface {
 	HandleGet(c echo.Context) error
-	HandlePost(c echo.Context, order model.Order) error
+	HandlePost(c echo.Context, order model.OrderRequest) error
 	HandleDelete(c echo.Context) error
 	HandleList(c echo.Context) error
 	HandlePay(c echo.Context) error
@@ -40,7 +40,7 @@ func (h *OrderHandlerImp) HandleGet(c echo.Context) error {
 	return c.JSON(http.StatusOK, cm)
 }
 
-func (h *OrderHandlerImp) HandlePost(c echo.Context, order model.Order) error {
+func (h *OrderHandlerImp) HandlePost(c echo.Context, order model.OrderRequest) error {
 	cm, err := h.orderUsecase.Create(order)
 	if err != nil {
 		log.Printf("Error creating order: %v", err)
