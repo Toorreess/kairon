@@ -15,12 +15,14 @@ type MemberUsecase interface {
 }
 
 type MemberUsecaseImp struct {
-	memberRepository repositories.MemberRepository
+	memberRepository     repositories.MemberRepository
+	membershipRepository repositories.MembershipRepository
 }
 
-func NewMemberUsecase(dr repositories.MemberRepository) MemberUsecase {
+func NewMemberUsecase(dr repositories.MemberRepository, msr repositories.MembershipRepository) MemberUsecase {
 	return &MemberUsecaseImp{
-		memberRepository: dr,
+		memberRepository:     dr,
+		membershipRepository: msr,
 	}
 }
 
@@ -29,10 +31,22 @@ func (cu *MemberUsecaseImp) Read(id string) (model.Member, error) {
 }
 
 func (cu *MemberUsecaseImp) Create(cm model.Member) (model.Member, error) {
+	if _, err := cu.membershipRepository.Read(cm.MembershipID); err != nil {
+		return model.Member{}, err
+	}
+
 	return cu.memberRepository.Create(cm)
 }
 
 func (cu *MemberUsecaseImp) Update(id string, changes map[string]any) (model.Member, error) {
+	if ms, ok := changes["membership_id"]; ok {
+		if msStr, ok := ms.(string); ok {
+			if _, err := cu.membershipRepository.Read(msStr); err != nil {
+				return model.Member{}, err
+			}
+		}
+	}
+
 	return cu.memberRepository.Update(id, changes)
 }
 
