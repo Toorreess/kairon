@@ -87,9 +87,23 @@ func (s *Server) Run(port int) {
 		activityRoutes.GET("", activityHandlers.HandleList)
 	}
 
+	/* Memberships */
+	membershipRepository := repositories.NewMembershipRepository(s.DBConn)
+	membershipUsecase := usecases.NewMembershipUsecase(membershipRepository)
+	membershipHandlers := controllers.NewMembershipHandler(membershipUsecase)
+
+	membershipRoutes := v1.Group("/memberships")
+	{
+		membershipRoutes.GET("/:id", membershipHandlers.HandleGet)
+		membershipRoutes.POST("", validated(membershipHandlers.HandlePost))
+		membershipRoutes.PUT("/:id", validatedChanges(membershipHandlers.HandlePut))
+		membershipRoutes.DELETE("/:id", membershipHandlers.HandleDelete)
+		membershipRoutes.GET("", membershipHandlers.HandleList)
+	}
+
 	/* Members */
 	memberRepository := repositories.NewMemberRepository(s.DBConn)
-	memberUsecase := usecases.NewMemberUsecase(memberRepository)
+	memberUsecase := usecases.NewMemberUsecase(memberRepository, membershipRepository)
 	memberHandlers := controllers.NewMemberHandler(memberUsecase)
 
 	memberRoutes := v1.Group("/members")
@@ -101,7 +115,7 @@ func (s *Server) Run(port int) {
 		memberRoutes.GET("", memberHandlers.HandleList)
 	}
 
-	/* Order */
+	/* Orders */
 	orderRepository := repositories.NewOrderRepository(s.DBConn)
 	orderUsecase := usecases.NewOrderUsecase(orderRepository, productRepository)
 	orderHandlers := controllers.NewOrderHandler(orderUsecase)
