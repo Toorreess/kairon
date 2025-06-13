@@ -116,6 +116,15 @@ func (s *Server) Run(port int) {
 		orderRoutes.PUT("/:id/cancel", orderHandlers.HandleCancel)
 	}
 
+	/* Financial report */
+	reportUsecase := usecases.NewReportUsecase(orderRepository)
+	reportHandlers := controllers.NewReportHandler(reportUsecase)
+
+	reportRoutes := v1.Group("/reports")
+	{
+		reportRoutes.GET("/financial", reportHandlers.HandleGetFinancialReport)
+	}
+
 	printRoutes(s.api.Routes())
 
 	v1.GET("/health", func(c echo.Context) error {
