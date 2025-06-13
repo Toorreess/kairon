@@ -3,10 +3,10 @@ package firestore
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	db "kairon/adapters/database"
 	"kairon/cmd/api/infrastructure"
 	"kairon/utils"
-	"fmt"
 	"log"
 	"reflect"
 	"regexp"
@@ -425,10 +425,10 @@ func processQuery(collection *firestore.CollectionRef, query string, offset, lim
 		q = q.OrderBy(orderBy, effectiveOrder)
 	}
 
-	if rangeBy != "" && rangeSlice != nil && len(rangeSlice) == 2 {
+	if rangeBy != "" && rangeSlice != nil {
 		if len(rangeSlice) == 2 {
 			q = q.Where(rangeBy, ">=", rangeSlice[0])
-			q = q.Where(rangeBy, "<", rangeSlice[1])
+			q = q.Where(rangeBy, "<=", rangeSlice[1])
 		} else if len(rangeSlice) == 1 {
 			q = q.Where(rangeBy, ">=", rangeSlice[0])
 		}
