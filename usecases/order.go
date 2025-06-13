@@ -13,7 +13,7 @@ import (
 
 type OrderUsecase interface {
 	Read(id string) (model.Order, error)
-	Create(cm model.Order) (model.Order, error)
+	Create(cm model.OrderRequest) (model.Order, error)
 	Delete(id string) error
 	List(queryOpts infrastructure.QueryOpts) ([]model.Order, error)
 	Pay(id string) (model.Order, error)
@@ -36,13 +36,12 @@ func (cu *OrderUsecaseImp) Read(id string) (model.Order, error) {
 	return cu.orderRepository.Read(id)
 }
 
-func (cu *OrderUsecaseImp) Create(cm model.Order) (model.Order, error) {
+func (cu *OrderUsecaseImp) Create(cm model.OrderRequest) (model.Order, error) {
 	var order model.Order
 
 	txErr := cu.orderRepository.RunTransaction(context.Background(), func(tx db.DBTransaction) error {
-		cm.CreatedAt = time.Now().Unix()
-		cm.Status = "pending"
-
+		// First, read all product data
+		productUpdates := make(map[string]int)
 		for _, product := range cm.SelectedProducts {
 			// Get current product data
 			productData, err := tx.Get(cu.productRepository.Index(), product.ID, model.Product{})
@@ -62,19 +61,29 @@ func (cu *OrderUsecaseImp) Create(cm model.Order) (model.Order, error) {
 					return fmt.Errorf("not enough stock for product %s", product.ID)
 				}
 
-				// Update stock
-				updates := map[string]any{
-					"stock": currentProduct.Stock - product.Quantity,
-				}
+				// Store the update for later
+				productUpdates[product.ID] = currentProduct.Stock - product.Quantity
+			}
+		}
 
-				if err := tx.Update(cu.productRepository.Index(), product.ID, model.Product{}, updates); err != nil {
-					return fmt.Errorf("error updating product stock: %v", err)
-				}
+		// Now perform all product updates
+		for productID, newStock := range productUpdates {
+			updates := map[string]any{
+				"stock": newStock,
+			}
+			if err := tx.Update(cu.productRepository.Index(), productID, model.Product{}, updates); err != nil {
+				return fmt.Errorf("error updating product stock: %v", err)
 			}
 		}
 
 		// Create the order
-		orderMap, err := tx.Create(cu.orderRepository.Index(), cm)
+		order.Created = time.Now().Unix()
+		order.Amount = cm.Amount
+		order.MemberID = cm.MemberID
+		order.SelectedProducts = cm.SelectedProducts
+		order.Status = "pending"
+
+		orderMap, err := tx.Create(cu.orderRepository.Index(), order)
 		if err != nil {
 			return fmt.Errorf("error creating order: %v", err)
 		}
