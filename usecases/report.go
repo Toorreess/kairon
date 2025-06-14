@@ -37,6 +37,8 @@ func (uc *ReportUsecaseImp) GenerateFinancialReport(startDate, endDate time.Time
 		return nil, err
 	}
 
+	endDate = time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 23, 59, 59, 0, endDate.Location())
+
 	var filteredOrders []model.Order
 	for _, order := range allOrders {
 		if order.Created >= startDate.Unix() && order.Created <= endDate.Unix() {
