@@ -9,6 +9,7 @@ type Member struct {
 	Status       string `json:"status" firestore:"status" validate:"oneof=active inactive" updateAllowed:"true"`
 	MembershipID string `json:"membership_id" firestore:"membership_id" validate:"required" updateAllowed:"true"`
 
+	ActivityList []string `json:"activity_list" firestore:"activity_list" updateAllowed:"true"`
 	// Deleted is used for logical deletion
 	Deleted bool `json:"-" firestore:"deleted"`
 }

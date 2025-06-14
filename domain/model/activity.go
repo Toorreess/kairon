@@ -10,3 +10,8 @@ type Activity struct {
 	// Deleted is used for logical deletion
 	Deleted bool `json:"-" firestore:"deleted"`
 }
+
+type ActivityReserveRequest struct {
+	MemberID   string `json:"member_id" validate:"required"`
+	ActivityID string `json:"activity_id" validate:"required"`
+}
