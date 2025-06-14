@@ -18,6 +18,12 @@ type Config struct {
 	Server struct {
 		Address int
 	}
+	Smtp struct {
+		Host     string
+		Port     int
+		Email    string
+		Password string
+	}
 }
 
 var C Config

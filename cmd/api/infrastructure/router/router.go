@@ -99,6 +99,7 @@ func (s *Server) Run(port int) {
 		memberRoutes.PUT("/:id", validatedChanges(memberHandlers.HandlePut))
 		memberRoutes.DELETE("/:id", memberHandlers.HandleDelete)
 		memberRoutes.GET("", memberHandlers.HandleList)
+		memberRoutes.POST("/:id/send-email", memberHandlers.HandleSendEmail)
 	}
 
 	/* Activities */

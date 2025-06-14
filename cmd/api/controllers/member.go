@@ -3,6 +3,7 @@ package controllers
 import (
 	"kairon/cmd/api/infrastructure"
 	"kairon/cmd/api/presenter"
+	"kairon/config"
 	"kairon/domain/model"
 	"kairon/usecases"
 	"log"
@@ -18,6 +19,7 @@ type MemberHandler interface {
 	HandlePut(c echo.Context, member model.Member) error
 	HandleDelete(c echo.Context) error
 	HandleList(c echo.Context) error
+	HandleSendEmail(c echo.Context) error
 }
 
 type MemberHandlerImp struct {
@@ -95,4 +97,24 @@ func (h *MemberHandlerImp) HandleList(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, presenter.ListAPIResponse(results, qo.Offset, qo.Limit))
+}
+
+func (h *MemberHandlerImp) HandleSendEmail(c echo.Context) error {
+	memberID := c.Param("id")
+	cm, err := h.memberUsecase.Read(memberID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, presenter.APIResponse(http.StatusNotFound, err.Error()))
+	}
+
+	var req model.EmailRequest
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusUnprocessableEntity, presenter.APIResponse(http.StatusUnprocessableEntity, err.Error()))
+	}
+
+	if err := h.memberUsecase.SendEmail(
+		config.C.Smtp.Host, config.C.Smtp.Email, config.C.Smtp.Password, config.C.Smtp.Port,
+		cm.Email, req.Subject, req.Body); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, presenter.APIResponse(http.StatusBadRequest, err.Error()))
+	}
+	return c.JSON(http.StatusOK, presenter.APIResponse(http.StatusOK, "Email sent succesfully"))
 }

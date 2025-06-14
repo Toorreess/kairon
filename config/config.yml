@@ -6,3 +6,9 @@ database:
 
 server:
   address: 3000
+
+smtp:
+  host: "smtp.gmail.com"
+  port: 587
+  email: "noreply.kairon@gmail.com"
+  password: "iutj ncbp njwr ieig"
