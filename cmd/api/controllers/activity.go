@@ -18,6 +18,7 @@ type ActivityHandler interface {
 	HandlePut(c echo.Context, activity model.Activity) error
 	HandleDelete(c echo.Context) error
 	HandleList(c echo.Context) error
+	HandleReserve(c echo.Context) error
 }
 
 type ActivityHandlerImp struct {
@@ -95,4 +96,17 @@ func (h *ActivityHandlerImp) HandleList(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, presenter.ListAPIResponse(results, qo.Offset, qo.Limit))
+}
+
+func (h *ActivityHandlerImp) HandleReserve(c echo.Context) error {
+	var req model.ActivityReserveRequest
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, presenter.APIResponse(http.StatusBadRequest, err.Error()))
+	}
+
+	if err := h.activityUsecase.Reserve(req.MemberID, req.ActivityID); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, presenter.APIResponse(http.StatusBadRequest, err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, presenter.APIResponse(http.StatusOK, "Activity reserved successfully"))
 }
