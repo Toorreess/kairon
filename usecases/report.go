@@ -44,15 +44,15 @@ func (uc *ReportUsecaseImp) GenerateFinancialReport(startDate, endDate time.Time
 		}
 	}
 
-	log.Println(filteredOrders)
-	totalSales := 0.0
+	totalSalesIncome := 0.0
 	for _, order := range filteredOrders {
-		totalSales += order.Amount
+		totalSalesIncome += order.Amount
 	}
 
 	return &model.FinancialReport{
 		StartDate:        startDate.Format("2006-01-02"),
 		EndDate:          endDate.Format("2006-01-02"),
-		TotalSalesIncome: totalSales,
+		TotalSales:       len(filteredOrders),
+		TotalSalesIncome: totalSalesIncome,
 	}, nil
 }
