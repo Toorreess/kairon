@@ -1,9 +1,11 @@
 package usecases
 
 import (
+	"fmt"
 	"kairon/cmd/api/infrastructure"
 	"kairon/domain/model"
 	"kairon/repositories"
+	"net/smtp"
 )
 
 type MemberUsecase interface {
@@ -12,6 +14,7 @@ type MemberUsecase interface {
 	Update(id string, changes map[string]any) (model.Member, error)
 	Delete(id string) error
 	List(queryOpts infrastructure.QueryOpts) ([]model.Member, error)
+	SendEmail(host, sender, password string, port int, receiver, subject, body string) error
 }
 
 type MemberUsecaseImp struct {
@@ -56,4 +59,20 @@ func (cu *MemberUsecaseImp) Delete(id string) error {
 
 func (cu *MemberUsecaseImp) List(queryOpts infrastructure.QueryOpts) ([]model.Member, error) {
 	return cu.memberRepository.List(queryOpts)
+}
+
+func (cu *MemberUsecaseImp) SendEmail(host, sender, password string, port int, receiver, subject, body string) error {
+	auth := smtp.PlainAuth("", sender, password, host)
+
+	header := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";"
+	msg := fmt.Sprintf("Subject: %s\n%s\n\n%s", subject, header, body)
+	err := smtp.SendMail(
+		fmt.Sprintf("%s:%d", host, port),
+		auth,
+		sender,
+		[]string{receiver},
+		[]byte(msg),
+	)
+
+	return err
 }
