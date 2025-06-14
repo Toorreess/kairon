@@ -24,8 +24,8 @@ func NewReportHandler(cu usecases.ReportUsecase) ReportHandler {
 }
 
 func (r *ReportHandlerImp) HandleGetFinancialReport(c echo.Context) error {
-	startDateStr := c.QueryParam("startDate")
-	endDateStr := c.QueryParam("endDate")
+	startDateStr := c.QueryParam("start_date")
+	endDateStr := c.QueryParam("end_date")
 
 	startDate, err := time.Parse("2006-01-02", startDateStr)
 	if err != nil {
