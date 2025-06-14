@@ -58,7 +58,7 @@ func (cu *ActivityUsecaseImp) Reserve(memberID, activityID string) error {
 	}
 
 	if slices.Contains(cm.ActivityList, activityID) {
-		return fmt.Errorf("member already has this activity reserved.")
+		return fmt.Errorf("member already has this activity reserved")
 	}
 
 	am, err := cu.activityRepository.Read(activityID)
