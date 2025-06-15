@@ -4,7 +4,7 @@ type Activity struct {
 	ID          string `json:"id" firestore:"-"`
 	Name        string `json:"name" firestore:"name" validate:"required" updateAllowed:"true"`
 	Duration    int    `json:"duration" firestore:"duration" updateAllowed:"true"`
-	MaxCapacity int    `json:"max_capacity" firestore:"max_capacity"`
+	MaxCapacity int    `json:"max_capacity" firestore:"max_capacity" updateAllowed:"true"`
 	IsActive    bool   `json:"is_active" firestore:"is_active" updateAllowed:"true"`
 
 	// Deleted is used for logical deletion
