@@ -12,6 +12,6 @@ type Activity struct {
 }
 
 type ActivityReserveRequest struct {
-	MemberID   string `json:"member_id" validate:"required"`
-	ActivityID string `json:"activity_id" validate:"required"`
+	MemberID     string   `json:"member_id" validate:"required"`
+	ActivityList []string `json:"activity_list" validate:"required"`
 }
