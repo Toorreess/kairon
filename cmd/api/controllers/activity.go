@@ -104,7 +104,7 @@ func (h *ActivityHandlerImp) HandleReserve(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, presenter.APIResponse(http.StatusBadRequest, err.Error()))
 	}
 
-	if err := h.activityUsecase.Reserve(req.MemberID, req.ActivityID); err != nil {
+	if err := h.activityUsecase.Reserve(req.MemberID, req.ActivityList); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, presenter.APIResponse(http.StatusBadRequest, err.Error()))
 	}
 
